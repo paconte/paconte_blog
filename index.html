@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link rel="alternate"
+      type="application/rss+xml"
+      href="https://paconte.com/rss.xml"
+      title="RSS feed for https://paconte.com/">
+<title>Paconte's blog</title>
+<meta name="author" content="Francisco Javier Revilla Linares">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="initial-scale=1,width=device-width,minimum-scale=1">
+<link href= "./static/notes.css" rel="stylesheet" type="text/css" />
+<link rel="icon" href="static/favicon.ico"></head>
+<body>
+<div id="preamble" class="status"><br>
+<div class="header">
+  <div class="sitelinks">
+    <a href="https://paconte.com" style="font-weight:bold;font-size:1.5em;">paconte.com</a><br>
+    <a href="https://paconte.com/archive.html">Posts</a>  |  <a href="https://paconte.com/tags.html">Tags</a>  |  <a href="https://paconte.com/rss.xml">RSS</a>  | <a href="https://github.com/paconte">Github</a>
+  </div>
+</div>
+<br>
+<br></div>
+<div id="content">
+
+<div class="post-date">02 Feb 2023</div><h1 class="post-title"><a href="https://paconte.com/2023-02-02-comparing-java-map-and-python-dictionary.html">Comparing java map and python dict</a></h1>
+<nav id="table-of-contents" role="doc-toc">
+<h2>Table of Contents</h2>
+<div id="text-table-of-contents" role="doc-toc">
+<ul>
+<li><a href="#org8d18367">1. Hash collisions</a>
+<ul>
+<li><a href="#orgeb24349">1.1. Separate chaining</a></li>
+<li><a href="#org7d9d505">1.2. Open addressing</a></li>
+</ul>
+</li>
+<li><a href="#orgb540661">2. Java map</a></li>
+<li><a href="#orgffb9a43">3. Python dictionary</a></li>
+<li><a href="#org7fec450">4. Performance</a>
+<ul>
+<li><a href="#org183f72b">4.1. Load factor</a></li>
+</ul>
+</li>
+<li><a href="#orgb569bdc">5. What about sets</a></li>
+<li><a href="#org23e3da2">6. Summary</a></li>
+<li><a href="#org6f526eb">7. A note on source code</a></li>
+</ul>
+</div>
+</nav>
+<p>
+Recently, I have been asked how python solves hash collisions in
+dictionaries. At that moment, I knew the answer for java maps, but
+not for python dictionaries. That was the starting point of this entry.<br>
+</p>
+
+<p>
+Both data structures, java maps and python dictionaries, are implemented
+using hash tables. One of the most important feature of hash tables is 
+that the average search complexity is O(1). Hash tables turn out to be on
+average more efficient than search trees or any other table lookup
+structure. For this reason, they are widely used in computer science.<br>
+</p>
+
+<p>
+Figure 1 is a refresher of how hash tables works. Looking after a phone
+number in an agenda is a repetitive task, and we want it to be as fast
+as possible.
+</p>
+
+
+<figure id="org9284dd5">
+<img src="./images/comparing-java-map-python-dict/hash_table_example_630x460px.svg.png" alt="hash_table_example_630x460px.svg.png" width="567px" height="414px">
+
+<figcaption><span class="figure-number">Figure 1: </span>A small phone book as a hash table [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].</figcaption>
+</figure>
+
+
+<div id="outline-container-org8d18367" class="outline-2">
+<h2 id="org8d18367"><span class="section-number-2">1.</span> Hash collisions</h2>
+<div class="outline-text-2" id="text-1">
+<p>
+Java maps and python dictionaries implementations differs from each
+other in how they solve hash collisions. A collision is when two keys
+share the same hash value. Hash collisions are inevitable, and two of
+the most common strategies of collision resolution are <b>open addressing</b>
+and <b>separate chaining</b>.
+</p>
+</div>
+
+<div id="outline-container-orgeb24349" class="outline-3">
+<h3 id="orgeb24349"><span class="section-number-3">1.1.</span> Separate chaining</h3>
+<div class="outline-text-3" id="text-1-1">
+
+<figure id="org6eb16a6">
+<img src="./images/comparing-java-map-python-dict/hash_table_chaining_450x310px.svg.png" alt="hash_table_chaining_450x310px.svg.png" width="495px" height="341px">
+
+<figcaption><span class="figure-number">Figure 2: </span>Hash collision resolved by separate chaining [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].</figcaption>
+</figure>
+
+<p>
+As shown in figure two, when two different keys point to the same cell value,
+the cell value contains a linked list with all the collisions. In this case
+the search average time is O(n) where n is the number of collisions. The
+worst case scenario is when the table has only one cell, then n is the length
+of your whole collection.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org7d9d505" class="outline-3">
+<h3 id="org7d9d505"><span class="section-number-3">1.2.</span> Open addressing</h3>
+<div class="outline-text-3" id="text-1-2">
+<p>
+This technique is not as simple as separate chaining, but it should have a
+better performance. If a hash collision occurs, the table will be probed
+to move the record to a different cell that is empty. There are different
+probing techniques, for example in figure three the next cell position is used.
+</p>
+
+
+<figure id="orge986632">
+<img src="./images/comparing-java-map-python-dict/hash_table_open_addressing_380x330px.svg.png" alt="hash_table_open_addressing_380x330px.svg.png" width="418px" height="363px">
+
+<figcaption><span class="figure-number">Figure 3: </span>Hash collusion resolved by open addressing [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].</figcaption>
+</figure>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgb540661" class="outline-2">
+<h2 id="orgb540661"><span class="section-number-2">2.</span> Java map</h2>
+<div class="outline-text-2" id="text-2">
+<p>
+If we inspect the Hashmap class from the <code>java.util</code> package, we will see
+that java uses separate chaining for solving hash clashes. Java also adds
+a performance improvement, instead of using linked list to chain the
+collisions, when there are too many collisions the linked list is
+converted into a binary tree reducing the search average time from <code>O(n)</code>
+to <code>O(log2 n)</code>.
+</p>
+
+<p>
+The code below correspond to the <code>putVal</code> method from the <code>Hashmap</code>
+class which is in
+charge of writing into the hash table. <code>Line 6</code> writes into an empty
+cell, <code>line 17</code> inserts a new collision into a linked list and <code>line 13</code>
+into a binary tree. Finally, <code>line 19</code> converts the linked list into a
+binary tree.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span class="linenr"> 1: </span><span style="color: #a020f0;">final</span> <span style="color: #228b22;">V</span> <span style="color: #0000ff;">putVal</span>(<span style="color: #228b22;">int</span> <span style="color: #a0522d;">hash</span>, <span style="color: #228b22;">K</span> <span style="color: #a0522d;">key</span>, <span style="color: #228b22;">V</span> <span style="color: #a0522d;">value</span>, <span style="color: #228b22;">boolean</span> <span style="color: #a0522d;">onlyIfAbsent</span>, <span style="color: #228b22;">boolean</span> <span style="color: #a0522d;">evict</span>) {
+<span class="linenr"> 2: </span>    <span style="color: #228b22;">Node</span>&lt;<span style="color: #228b22;">K</span>,<span style="color: #228b22;">V</span>&gt;[] <span style="color: #a0522d;">tab</span>; <span style="color: #228b22;">Node</span>&lt;<span style="color: #228b22;">K</span>,<span style="color: #228b22;">V</span>&gt; <span style="color: #a0522d;">p</span>; <span style="color: #228b22;">int</span> <span style="color: #a0522d;">n</span>, <span style="color: #a0522d;">i</span>;
+<span class="linenr"> 3: </span>    <span style="color: #a020f0;">if</span> ((tab = table) == <span style="color: #008b8b;">null</span> || (n = tab.length) == 0)
+<span class="linenr"> 4: </span>        n = (tab = resize()).length;
+<span class="linenr"> 5: </span>    <span style="color: #a020f0;">if</span> ((p = tab[i = (n - 1) &amp; hash]) == <span style="color: #008b8b;">null</span>)
+<span class="linenr"> 6: </span>        tab[i] = newNode(hash, key, value, <span style="color: #008b8b;">null</span>);
+<span class="linenr"> 7: </span>    <span style="color: #a020f0;">else</span> {
+<span class="linenr"> 8: </span>        <span style="color: #228b22;">Node</span>&lt;<span style="color: #228b22;">K</span>,<span style="color: #228b22;">V</span>&gt; <span style="color: #a0522d;">e</span>; <span style="color: #228b22;">K</span> <span style="color: #a0522d;">k</span>;
+<span class="linenr"> 9: </span>        <span style="color: #a020f0;">if</span> (p.hash == hash &amp;&amp;
+<span class="linenr">10: </span>            ((k = p.key) == key || (key != <span style="color: #008b8b;">null</span> &amp;&amp; key.equals(k))))
+<span class="linenr">11: </span>            e = p;
+<span class="linenr">12: </span>        <span style="color: #a020f0;">else</span> <span style="color: #a020f0;">if</span> (p <span style="color: #a020f0;">instanceof</span> TreeNode)
+<span class="linenr">13: </span>            e = ((<span style="color: #228b22;">TreeNode</span>&lt;<span style="color: #228b22;">K</span>,<span style="color: #228b22;">V</span>&gt;)p).putTreeVal(<span style="color: #a020f0;">this</span>, tab, hash, key, value);
+<span class="linenr">14: </span>        <span style="color: #a020f0;">else</span> {
+<span class="linenr">15: </span>            <span style="color: #a020f0;">for</span> (<span style="color: #228b22;">int</span> <span style="color: #a0522d;">binCount</span> = 0; ; ++binCount) {
+<span class="linenr">16: </span>                <span style="color: #a020f0;">if</span> ((e = p.next) == <span style="color: #008b8b;">null</span>) {
+<span class="linenr">17: </span>                    p.next = newNode(hash, key, value, <span style="color: #008b8b;">null</span>);
+<span class="linenr">18: </span>                    <span style="color: #a020f0;">if</span> (binCount &gt;= TREEIFY_THRESHOLD - 1) <span style="color: #b22222;">// </span><span style="color: #b22222;">-1 for 1st</span>
+<span class="linenr">19: </span>                        treeifyBin(tab, hash);
+<span class="linenr">20: </span>                    <span style="color: #a020f0;">break</span>;
+<span class="linenr">21: </span>                }
+<span class="linenr">22: </span>                <span style="color: #a020f0;">if</span> (e.hash == hash &amp;&amp;
+<span class="linenr">23: </span>                    ((k = e.key) == key || (key != <span style="color: #008b8b;">null</span> &amp;&amp; key.equals(k))))
+<span class="linenr">24: </span>                    <span style="color: #a020f0;">break</span>;
+<span class="linenr">25: </span>                p = e;
+<span class="linenr">26: </span>            }
+<span class="linenr">27: </span>        }
+<span class="linenr">28: </span>    }
+<span class="linenr">29: </span>}
+</pre>
+</div>
+
+<p>
+The above code is extracted from the Java SE 17 (LTS) version, the binary
+tree improvement has been introduced in Java 8, in older versions the
+chaining was done only with linked lists.
+</p>
+</div>
+</div>
+
+
+<div id="outline-container-orgffb9a43" class="outline-2">
+<h2 id="orgffb9a43"><span class="section-number-2">3.</span> Python dictionary</h2>
+<div class="outline-text-2" id="text-3">
+<p>
+Python in contrast to java uses open addressing to resolve hash collisions.
+I recommend you to read the documentation from the source code: 
+<a href="https://github.com/python/cpython/blob/3.11/Objects/dictobject.c">https://github.com/python/cpython/blob/3.11/Objects/dictobject.c</a>
+Where the collision resolution is nicely explained at the beginning of the
+file.
+</p>
+
+<p>
+Python resolves hash table collisions applying the formula
+<code>idx = (5 * idx + 1) % size</code>, where <code>idx</code> is the table position. 
+Let's see an example:<br>
+</p>
+
+
+<figure id="org8027142">
+<img src="./images/comparing-java-map-python-dict/python_open_chaining_formula_720x228px.png" alt="python_open_chaining_formula_720x228px.png" width="648px" height="205px">
+
+</figure>
+
+<ol class="org-ol">
+<li>Given a table of size <code>8</code></li>
+<li>We want to insert an element in position <code>0</code>, which is not empty.</li>
+<li>Applying the formula, the next cell to check is position <code>1</code>  <code>[(5*0 + 1) % 8 = 1]</code></li>
+<li>The cell is not empty, next try is position <code>6</code> <code>[(5*1 + 1) % 8 = 6]</code></li>
+<li>The following try is position <code>7 [(5*6 + 1) % 8 = 7]</code></li>
+<li>Next try is position  <code>4 [(5*7 + 1) % 8 = 5]</code></li>
+<li>Etc&#x2026;</li>
+</ol>
+
+<p>
+Can you spot the pattern?
+</p>
+
+<p>
+Python adds some randomness to the process adding a perturb value which is
+calculated with the low bits of the hash, the final formula is
+<code>idx = ((5 * idx) + 1 + perturb) % size</code>.
+</p>
+
+
+<p>
+Unfortunately, the C source code of CPython dictionaries is not as straight
+forward as Java code is. This is due to some optimizations that we will
+see later on, when we will talk about performance. We can see the formula
+<code>idx = ((5 * idx) + 1 + perturb) % size</code>
+in action in the method <code>lookdict_index</code>, where <code>line 9</code> is an infinite
+loop to find out the index, <code>line 17</code> recalculates the perturb value and
+<code>line 18</code> applies the formula.
+</p>
+
+
+<div class="org-src-container">
+<pre class="src src-c"><span class="linenr"> 1: </span><span style="color: #b22222;">/* </span><span style="color: #b22222;">Search index of hash table from offset of entry table</span><span style="color: #b22222;"> */</span>
+<span class="linenr"> 2: </span><span style="color: #a020f0;">static</span> <span style="color: #228b22;">Py_ssize_t</span>
+<span class="linenr"> 3: </span><span style="color: #0000ff;">lookdict_index</span>(<span style="color: #228b22;">PyDictKeysObject</span> *<span style="color: #a0522d;">k</span>, <span style="color: #228b22;">Py_hash_t</span> <span style="color: #a0522d;">hash</span>, <span style="color: #228b22;">Py_ssize_t</span> <span style="color: #a0522d;">index</span>)
+<span class="linenr"> 4: </span>{
+<span class="linenr"> 5: </span>    <span style="color: #228b22;">size_t</span> <span style="color: #a0522d;">mask</span> = DK_MASK(k);
+<span class="linenr"> 6: </span>    <span style="color: #228b22;">size_t</span> <span style="color: #a0522d;">perturb</span> = (<span style="color: #228b22;">size_t</span>)hash;
+<span class="linenr"> 7: </span>    <span style="color: #228b22;">size_t</span> <span style="color: #a0522d;">i</span> = (<span style="color: #228b22;">size_t</span>)hash &amp; mask;
+<span class="linenr"> 8: </span>
+<span class="linenr"> 9: </span>    <span style="color: #a020f0;">for</span> (;;) {
+<span class="linenr">10: </span>        <span style="color: #228b22;">Py_ssize_t</span> <span style="color: #a0522d;">ix</span> = dictkeys_get_index(k, i);
+<span class="linenr">11: </span>        <span style="color: #a020f0;">if</span> (ix == index) {
+<span class="linenr">12: </span>            <span style="color: #a020f0;">return</span> i;
+<span class="linenr">13: </span>        }
+<span class="linenr">14: </span>        <span style="color: #a020f0;">if</span> (ix == DKIX_EMPTY) {
+<span class="linenr">15: </span>            <span style="color: #a020f0;">return</span> DKIX_EMPTY;
+<span class="linenr">16: </span>        }
+<span class="linenr">17: </span>        perturb &gt;&gt;= PERTURB_SHIFT;
+<span class="linenr">18: </span>        i = mask &amp; (i*5 + perturb + 1);
+<span class="linenr">19: </span>    }
+<span class="linenr">20: </span>    Py_UNREACHABLE();
+<span class="linenr">21: </span>}
+</pre>
+</div>
+</div>
+</div>
+
+<div id="outline-container-org7fec450" class="outline-2">
+<h2 id="org7fec450"><span class="section-number-2">4.</span> Performance</h2>
+<div class="outline-text-2" id="text-4">
+
+<figure id="orga9baba5">
+<img src="./images/comparing-java-map-python-dict/hash_table_average_insertion_time_362x235px.png" alt="hash_table_average_insertion_time_362x235px.png" width="362px" height="235px">
+
+<figcaption><span class="figure-number">Figure 4: </span>Derrick Coetzee, Public domain, via Wikimedia Commons.</figcaption>
+</figure>
+
+
+<p>
+The above graph compares the average number of CPU cache
+misses required to look up elements in large hash tables with chaining
+and linear probing. Linear probing performs better due to better locality
+of reference, though as the table gets full, its performance degrades
+drastically.
+</p>
+
+<p>
+Python uses dicts internally when it creates objects, functions,
+import modules, etc&#x2026; Therefore, the performance of dictionaries is
+critical and linear probing is the way to go for them. The code below
+shows how python uses dictionaries internally when creating classes.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-python"><span style="color: #a020f0;">class</span> <span style="color: #228b22;">Foo</span>():
+    <span style="color: #a020f0;">def</span> <span style="color: #0000ff;">bar</span>(x):
+        <span style="color: #a020f0;">return</span> x+1
+
+&gt;&gt;&gt; <span style="color: #483d8b;">print</span>(Foo.<span style="color: #483d8b;">__dict__</span>)
+{
+  <span style="color: #8b2252;">'__module__'</span>: <span style="color: #8b2252;">'__main__'</span>,
+  <span style="color: #8b2252;">'bar'</span>: &lt;function Foo.bar at 0x100d6b370&gt;,
+  <span style="color: #8b2252;">'__dict__'</span>: &lt;attribute <span style="color: #8b2252;">'__dict__'</span> of <span style="color: #8b2252;">'Foo'</span> objects&gt;,
+  <span style="color: #8b2252;">'__weakref__'</span>: &lt;attribute <span style="color: #8b2252;">'__weakref__'</span> of <span style="color: #8b2252;">'Foo'</span> objects&gt;,
+  <span style="color: #8b2252;">'__doc__'</span>: <span style="color: #008b8b;">None</span>
+}
+</pre>
+</div>
+</div>
+
+
+<div id="outline-container-org183f72b" class="outline-3">
+<h3 id="org183f72b"><span class="section-number-3">4.1.</span> Load factor</h3>
+<div class="outline-text-3" id="text-4-1">
+<p>
+As we have seen the load factor is crucial for the performance of hash table,
+python has a load factor of 2/3 and java of 0.75. This makes sense, as linear
+probing performance is very bad when there are no empty hash spaces. On the
+other hand, java uses a threshold of 8 elements to switch from a linked list
+to a binary tree, as we can see in the code below.
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #a020f0;">static</span> <span style="color: #a020f0;">final</span> <span style="color: #228b22;">float</span> <span style="color: #a0522d;">DEFAULT_LOAD_FACTOR</span> = 0.75f;
+
+<span style="color: #8b2252;">/**</span>
+<span style="color: #8b2252;"> * The bin count threshold for using a tree rather than list for a</span>
+<span style="color: #8b2252;"> * bin. Bins are converted to trees when adding an element to a</span>
+<span style="color: #8b2252;"> * bin with at least this many nodes. The value must be greater</span>
+<span style="color: #8b2252;"> * than 2 and should be at least 8 to mesh with assumptions in</span>
+<span style="color: #8b2252;"> * tree removal about conversion back to plain bins upon</span>
+<span style="color: #8b2252;"> * shrinkage.</span>
+<span style="color: #8b2252;">*/</span>
+<span style="color: #a020f0;">static</span> <span style="color: #a020f0;">final</span> <span style="color: #228b22;">int</span> <span style="color: #a0522d;">TREEIFY_THRESHOLD</span> = 8;
+</pre>
+</div>
+</div>
+</div>
+</div>
+
+
+<div id="outline-container-orgb569bdc" class="outline-2">
+<h2 id="orgb569bdc"><span class="section-number-2">5.</span> What about sets</h2>
+<div class="outline-text-2" id="text-5">
+<p>
+Dictionaries and maps are closely related to sets. In fact, sets are just
+dictionaries/maps without values. Indeed, Java uses this approach to
+implement sets, lets look at the source code: 
+</p>
+
+<div class="org-src-container">
+<pre class="src src-java"><span style="color: #8b2252;">/**</span>
+<span style="color: #8b2252;"> * Constructs a new, empty set; the backing </span><span style="color: #008b8b;">{@code HashMap}</span><span style="color: #8b2252;"> instance has</span>
+<span style="color: #8b2252;"> * default initial capacity (16) and load factor (0.75).</span>
+<span style="color: #8b2252;"> */</span>
+<span style="color: #a020f0;">public</span> HashSet() {
+    map = <span style="color: #a020f0;">new</span> <span style="color: #228b22;">HashMap</span>&lt;&gt;();
+}
+</pre>
+</div>
+
+<p>
+There are two different reasons why python does not reuse Objects/dictobject.c for
+implementing sets,
+the first one is that CPython does not use sets internally and the requirements
+are different. Looking after performance, CPython optimize the sets for the use
+case of membership. It is well documented in the source code to be found in
+Objects/setobject.c.:
+</p>
+
+<div class="org-src-container">
+<pre class="src src-c"><span style="color: #b22222;">/*</span>
+<span style="color: #b22222;">   Use cases for sets differ considerably from dictionaries where looked-up</span>
+<span style="color: #b22222;">   keys are more likely to be present.  In contrast, sets are primarily</span>
+<span style="color: #b22222;">   about membership testing where the presence of an element is not known in</span>
+<span style="color: #b22222;">   advance.  Accordingly, the set implementation needs to optimize for both</span>
+<span style="color: #b22222;">   the found and not-found case.</span>
+<span style="color: #b22222;">*/</span>
+</pre>
+</div>
+
+<p>
+A set is a different object and the hash table works a bit different,
+the set load factor is 60% instead of 66.6%, every time the table grows
+it uses a factor of 4 instead of 2, and the main difference is in the
+linear probing algorithm, where it inspects more than one cell for every
+probe. 
+</p>
+</div>
+</div>
+
+<div id="outline-container-org23e3da2" class="outline-2">
+<h2 id="org23e3da2"><span class="section-number-2">6.</span> Summary</h2>
+<div class="outline-text-2" id="text-6">
+<p>
+CPython and Java use different approach to resolve hash collisions,
+while Java uses separate chaining, CPython uses linear probing. Java
+implements sets reusing hash tables but with dummy values, while python
+using also linear probing, optimizes the sets for different use cases,
+implementing a new linear probing algorithm. The reason for that is because
+CPython uses dictionaries internally and a high performance is critical
+for a proper performance of Python.
+</p>
+</div>
+</div>
+
+<div id="outline-container-org6f526eb" class="outline-2">
+<h2 id="org6f526eb"><span class="section-number-2">7.</span> A note on source code</h2>
+<div class="outline-text-2" id="text-7">
+<p>
+The source code examples are extracted respectively from the Java SE 17
+(LTS) and CPython 3.11 versions.
+</p>
+</div>
+</div>
+<div class="taglist"><a href="https://paconte.com/tags.html">Tags</a>: <a href="https://paconte.com/tag-java.html">java</a> <a href="https://paconte.com/tag-python.html">python</a> <a href="https://paconte.com/tag-hash-table.html">hash-table</a> </div><div id="archive">
+<a href="https://paconte.com/archive.html">Other posts</a>
+</div>
+</div>
+<div id="postamble" class="status"><div id="archive"><a href="https://paconte.com/archive.html">Other posts</a></div>
+<center><a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/3.0/88x31.png" /></a><br /><span xmlns:dct="https://purl.org/dc/terms/" href="https://purl.org/dc/dcmitype/Text" property="dct:title" rel="dct:type">paconte.com</span> by <a xmlns:cc="https://creativecommons.org/ns#" href="https://paconte.com" property="cc:attributionName" rel="cc:attributionURL">Francisco Javier Revilla Linares</a> is licensed under a <a rel="license" href="https://creativecommons.org/licenses/by-sa/3.0/">Creative Commons Attribution-ShareAlike 3.0 Unported License</a>.</center></div>
+</body>
+</html>

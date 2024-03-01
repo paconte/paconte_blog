@@ -1,0 +1,290 @@
+#+title: Comparing java map and python dict
+#+date: <2023-02-02 21:02>
+#+description: How hash table collisions are solved in java and python
+#+filetags: java python hash-table
+
+Recently, I have been asked how python solves hash collisions in
+dictionaries. At that moment, I knew the answer for java maps, but
+not for python dictionaries. That was the starting point of this entry.\\
+
+#+BEGIN_COMMENT
+Both data structures, java maps and python dictionaries, are implemented
+using hash tables. One of the most important feature of hash tables is 
+that the average search complexity is O(1). Hash tables turn out to be on
+average more efficient than search trees or any other table lookup
+structure. For this reason, they are widely used in computer science.\\
+#+END_COMMENT
+
+Java maps and Python dictionaries are both implemented using hash tables,
+which are highly efficient data structures for storing and retrieving
+key-value pairs. Hash tables have an average search complexity of O(1),
+making them more efficient than search trees or other table lookup
+structures. For this reason, they are widely used in computer science.\\
+
+Figure 1 is a refresher of how hash tables works. Looking after a phone
+number in an agenda is a repetitive task, and we want it to be as fast
+as possible.
+
+#+CAPTION: A small phone book as a hash table [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].
+#+ATTR_HTML: :width 567px :height 414px
+[[./images/comparing-java-map-python-dict/hash_table_example_630x460px.svg.png]]
+
+
+* Hash collisions
+
+Java maps and python dictionaries implementations differs from each
+other in how they solve hash collisions. A collision is when two keys
+share the same hash value. Hash collisions are inevitable, and two of
+the most common strategies of collision resolution are *open addressing*
+and *separate chaining*.
+
+** Separate chaining
+
+#+CAPTION: Hash collision resolved by separate chaining [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].
+#+ATTR_HTML: :width 495px :height 341px
+[[./images/comparing-java-map-python-dict/hash_table_chaining_450x310px.svg.png]]
+
+As shown in figure two, when two different keys point to the same cell value,
+the cell value contains a linked list with all the collisions. In this case
+the search average time is O(n) where n is the number of collisions. The
+worst case scenario is when the table has only one cell, then n is the length
+of your whole collection.
+
+** Open addressing
+
+This technique is not as simple as separate chaining, but it should have a
+better performance. If a hash collision occurs, the table will be probed
+to move the record to a different cell that is empty. There are different
+probing techniques, for example in figure three the next cell position is used.
+
+#+CAPTION: Hash collusion resolved by open addressing [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].
+#+ATTR_HTML: :width 418px :height 363px
+[[./images/comparing-java-map-python-dict/hash_table_open_addressing_380x330px.svg.png]]
+
+
+* Java map
+
+If we inspect the Hashmap class from the ~java.util~ package, we will see
+that java uses separate chaining for solving hash clashes. Java also adds
+a performance improvement, instead of using linked list to chain the
+collisions, when there are too many collisions the linked list is
+converted into a binary tree reducing the search average time from ~O(n)~
+to ~O(log2 n)~.
+
+The code below correspond to the ~putVal~ method from the ~Hashmap~
+class which is in
+charge of writing into the hash table. ~Line 6~ writes into an empty
+cell, ~line 17~ inserts a new collision into a linked list and ~line 13~
+into a binary tree. Finally, ~line 19~ converts the linked list into a
+binary tree.
+
+#+begin_src java -n
+final V putVal(int hash, K key, V value, boolean onlyIfAbsent, boolean evict) {
+    Node<K,V>[] tab; Node<K,V> p; int n, i;
+    if ((tab = table) == null || (n = tab.length) == 0)
+        n = (tab = resize()).length;
+    if ((p = tab[i = (n - 1) & hash]) == null)
+        tab[i] = newNode(hash, key, value, null);
+    else {
+        Node<K,V> e; K k;
+        if (p.hash == hash &&
+	    ((k = p.key) == key || (key != null && key.equals(k))))
+            e = p;
+        else if (p instanceof TreeNode)
+            e = ((TreeNode<K,V>)p).putTreeVal(this, tab, hash, key, value);
+        else {
+	    for (int binCount = 0; ; ++binCount) {
+                if ((e = p.next) == null) {
+		    p.next = newNode(hash, key, value, null);
+		    if (binCount >= TREEIFY_THRESHOLD - 1) // -1 for 1st
+			treeifyBin(tab, hash);
+		    break;
+		}
+		if (e.hash == hash &&
+		    ((k = e.key) == key || (key != null && key.equals(k))))
+		    break;
+		p = e;
+	    }
+	}
+    }
+}
+#+end_src
+
+The above code is extracted from the Java SE 17 (LTS) version, the binary
+tree improvement has been introduced in Java 8, in older versions the
+chaining was done only with linked lists.
+
+
+* Python dictionary
+
+Python in contrast to java uses open addressing to resolve hash collisions.
+I recommend you to read the documentation from the source code: 
+https://github.com/python/cpython/blob/3.11/Objects/dictobject.c
+Where the collision resolution is nicely explained at the beginning of the
+file.
+
+Python resolves hash table collisions applying the formula
+~idx = (5 * idx + 1) % size~, where ~idx~ is the table position. 
+Let's see an example:\\
+
+#+ATTR_HTML: :width 648px :height 205px
+[[./images/comparing-java-map-python-dict/python_open_chaining_formula_720x228px.png]]
+
+1. Given a table of size ~8~
+2. We want to insert an element in position ~0~, which is not empty.
+3. Applying the formula, the next cell to check is position ~1~  ~[(5*0 + 1) % 8 = 1]~
+4. The cell is not empty, next try is position ~6~ ~[(5*1 + 1) % 8 = 6]~
+5. The following try is position ~7 [(5*6 + 1) % 8 = 7]~
+6. Next try is position  ~4 [(5*7 + 1) % 8 = 5]~
+7. Etc...
+
+Can you spot the pattern?
+
+Python adds some randomness to the process adding a perturb value which is
+calculated with the low bits of the hash, the final formula is
+~idx = ((5 * idx) + 1 + perturb) % size~.
+
+
+Unfortunately, the C source code of CPython dictionaries is not as straight
+forward as Java code is. This is due to some optimizations that we will
+see later on, when we will talk about performance. We can see the formula
+~idx = ((5 * idx) + 1 + perturb) % size~
+in action in the method ~lookdict_index~, where ~line 9~ is an infinite
+loop to find out the index, ~line 17~ recalculates the perturb value and
+~line 18~ applies the formula.
+
+
+#+begin_src c -n
+/* Search index of hash table from offset of entry table */
+static Py_ssize_t
+lookdict_index(PyDictKeysObject *k, Py_hash_t hash, Py_ssize_t index)
+{
+    size_t mask = DK_MASK(k);
+    size_t perturb = (size_t)hash;
+    size_t i = (size_t)hash & mask;
+
+    for (;;) {
+        Py_ssize_t ix = dictkeys_get_index(k, i);
+        if (ix == index) {
+            return i;
+        }
+        if (ix == DKIX_EMPTY) {
+            return DKIX_EMPTY;
+        }
+        perturb >>= PERTURB_SHIFT;
+        i = mask & (i*5 + perturb + 1);
+    }
+    Py_UNREACHABLE();
+}
+#+end_src
+
+* Performance
+
+#+CAPTION: Derrick Coetzee, Public domain, via Wikimedia Commons.
+#+ATTR_HTML: :width 362px :height 235px
+[[./images/comparing-java-map-python-dict/hash_table_average_insertion_time_362x235px.png]]
+
+
+The above graph compares the average number of CPU cache
+misses required to look up elements in large hash tables with chaining
+and linear probing. Linear probing performs better due to better locality
+of reference, though as the table gets full, its performance degrades
+drastically.
+
+Python uses dicts internally when it creates objects, functions,
+import modules, etc... Therefore, the performance of dictionaries is
+critical and linear probing is the way to go for them. The code below
+shows how python uses dictionaries internally when creating classes.
+
+#+begin_src python
+class Foo():
+    def bar(x):
+        return x+1
+    
+>>> print(Foo.__dict__)
+{
+  '__module__': '__main__',
+  'bar': <function Foo.bar at 0x100d6b370>,
+  '__dict__': <attribute '__dict__' of 'Foo' objects>,
+  '__weakref__': <attribute '__weakref__' of 'Foo' objects>,
+  '__doc__': None
+}
+#+end_src
+
+
+** Load factor
+
+As we have seen the load factor is crucial for the performance of hash table,
+python has a load factor of 2/3 and java of 0.75. This makes sense, as linear
+probing performance is very bad when there are no empty hash spaces. On the
+other hand, java uses a threshold of 8 elements to switch from a linked list
+to a binary tree, as we can see in the code below.
+
+#+begin_src java
+static final float DEFAULT_LOAD_FACTOR = 0.75f;
+
+/**
+ * The bin count threshold for using a tree rather than list for a
+ * bin. Bins are converted to trees when adding an element to a
+ * bin with at least this many nodes. The value must be greater
+ * than 2 and should be at least 8 to mesh with assumptions in
+ * tree removal about conversion back to plain bins upon
+ * shrinkage.
+*/
+static final int TREEIFY_THRESHOLD = 8;
+#+end_src
+
+
+* What about sets
+
+Dictionaries and maps are closely related to sets. In fact, sets are just
+dictionaries/maps without values. Indeed, Java uses this approach to
+implement sets, lets look at the source code: 
+
+#+begin_src java
+  /**
+   * Constructs a new, empty set; the backing {@code HashMap} instance has
+   * default initial capacity (16) and load factor (0.75).
+   */
+  public HashSet() {
+      map = new HashMap<>();
+  }
+#+end_src
+
+There are two different reasons why python does not reuse Objects/dictobject.c for
+implementing sets,
+the first one is that CPython does not use sets internally and the requirements
+are different. Looking after performance, CPython optimize the sets for the use
+case of membership. It is well documented in the source code to be found in
+Objects/setobject.c.:
+
+#+begin_src c
+/*
+   Use cases for sets differ considerably from dictionaries where looked-up
+   keys are more likely to be present.  In contrast, sets are primarily
+   about membership testing where the presence of an element is not known in
+   advance.  Accordingly, the set implementation needs to optimize for both
+   the found and not-found case.
+*/
+#+end_src
+
+A set is a different object and the hash table works a bit different,
+the set load factor is 60% instead of 66.6%, every time the table grows
+it uses a factor of 4 instead of 2, and the main difference is in the
+linear probing algorithm, where it inspects more than one cell for every
+probe. 
+
+* Summary
+
+CPython and Java use different approach to resolve hash collisions,
+while Java uses separate chaining, CPython uses linear probing. Java
+implements sets reusing hash tables but with dummy values, while python
+using also linear probing, optimizes the sets for different use cases,
+implementing a new linear probing algorithm. The reason for that is because
+CPython uses dictionaries internally and a high performance is critical
+for a proper performance of Python.
+
+* A note on source code
+
+The source code examples are extracted respectively from the Java SE 17
+(LTS) and CPython 3.11 versions.

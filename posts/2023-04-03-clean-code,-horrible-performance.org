@@ -1,0 +1,17 @@
+#+title: Clean code, horrible performance
+#+date: <2023-04-03 21:57>
+#+description: Clean code vs performance, a big missunderstanding. 
+#+filetags: clean_code
+
+Today I would like to talk about a youtube video from Molly Rocket
+called [[https://www.youtube.com/watch?v=tD5NrevFtbU]["Clean" Code, Horrible Performance]],
+in the video the author explains and demonstrates how bad performant
+clean code is, he takes an example from the clean code book and removes
+some rules which contribute to make your code "clean". It does it by
+removing one rule at a time and measuring the performance gained. The
+final "unclean" code is over 20 times faster than the "clean" code.
+
+While discussing the video, I realized the conversation became quickly
+emotional and generated some controversy, at some moment I was asked
+about my opinion but before revealing it I would like to recall some
+concepts.
