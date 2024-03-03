@@ -1,0 +1,19 @@
+#+title: Builder pattern Python vs Java
+#+date: <2024-03-03 15:07>
+#+description: Differences between  the design pattern in Java and Python
+#+filetags:  java python desing-patterns
+
+At my current job we are using Scala and Python. We decided to use the
+buildern pattern for one of the python microservices. While writing
+the buildern pattern in python, I realized how the scala team
+tried to use the same scala/java habbit to Python. Lets see the
+differences.
+
+While python supports function default arguments [fn:1] and named
+parameters [fn:2], Java doesn't. However Java supports function
+overloading [fn:3] and python not. 
+
+
+[fn:1] The link is: https://en.wikipedia.org/wiki/Default_argument
+[fn:2] The link is: https://en.wikipedia.org/wiki/Named_parameter
+[fn:3] The lin is: https://en.wikipedia.org/wiki/Function_overloading
