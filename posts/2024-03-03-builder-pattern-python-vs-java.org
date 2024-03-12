@@ -1,19 +1,265 @@
-#+title: Builder pattern Python vs Java
+#+title: Differences of the builder pattern in Java and Python
 #+date: <2024-03-03 15:07>
-#+description: Differences between  the design pattern in Java and Python
+#+description: Differences in the builder pattern in Java and Python
 #+filetags:  java python desing-patterns
 
-At my current job we are using Scala and Python. We decided to use the
-buildern pattern for one of the python microservices. While writing
-the buildern pattern in python, I realized how the scala team
-tried to use the same scala/java habbit to Python. Lets see the
-differences.
+In this post, we explore the differences in implementing the builder
+pattern in Java and Python.
 
-While python supports function default arguments [fn:1] and named
-parameters [fn:2], Java doesn't. However Java supports function
-overloading [fn:3] and python not. 
+* Introduction
+
+The builder design pattern [fn:1], first introduced in the "Design
+Patterns: Elements of Reusable Object-Oriented Software" (1994) [fn:2],
+popularly known as Gang of Four (GoF), is classified as a creational
+design pattern. This post focuses on its application in Java and Python.
+
+At my current job we are using different programming languages. We
+decided to use the buildern pattern for one of our python microservices.
+While writing the buildern pattern in python, the team brought their
+"java style" to the python code. However, there is a pythonic way
+to write it and save some lines of code. This is the story behind
+this post.
+
+* Language features in Java and Python
+
+<<target>>
+Let's first examine the features of each language that we will later
+use to implement the design patterns in Python and Java. Python
+supports function default arguments [fn:3] and named parameters [fn:4],
+while Java supports function overloading [fn:5].
+
+The following examples demonstrates default arguments:
+
+#+BEGIN_SRC python
+  # Function with default arguments
+  def calculate_area(length, width=5):
+      area = length * width
+      print(f"Area: {area}")
+
+  # Using the function with both parameters
+  calculate_area(8, 4)
+
+  # Using the function with the default value for 'width'
+  calculate_area(10)  # Width defaults to 5
+
+  # You can still explicitly provide a value for 'width'
+  calculate_area(6, 3)
+#+END_SRC
+
+The following Python example demonstrates both default arguments
+and named parameters:
+
+#+BEGIN_SRC python
+  # Function with named parameters
+  def print_user_info(name, age, city="Unknown", country="Unknown"):
+      print(f"Name: {name}, Age: {age}, City: {city}, Country: {country}")
+
+  # Using named parameters
+  print_user_info(name="John", age=25, city="New York", country="USA")
+
+  # Omitting some named parameters (using defaults)
+  print_user_info(name="Alice", age=30)
+
+  # Mixing ordered and named parameters
+  print_user_info("Bob", 28, country="Canada")
+#+END_SRC
 
 
-[fn:1] The link is: https://en.wikipedia.org/wiki/Default_argument
-[fn:2] The link is: https://en.wikipedia.org/wiki/Named_parameter
-[fn:3] The lin is: https://en.wikipedia.org/wiki/Function_overloading
+The following Java example shows how function overloading works:
+
+#+BEGIN_SRC java
+
+  // Java program to demonstrate working of method overloading in Java
+
+  public class Person {
+      private String firstName;
+      private String lastName;
+
+      // Person constructor with two arguments, the first and last name.
+      public Person(String firstName, String lastName) {
+          this.firstName = firstName;
+          this.lastName = lastName;
+      }
+
+      // Another constructor, this time with a single argument, the first name.
+      public Person(String firstName) {
+          this.firstName = firstName;
+      }
+
+      public static void main(String[] args) {
+        // Using constructor with two parameters
+        Person person1 = new Person("John", "Doe");
+        // Using constructor with one parameter
+        Person person2 = new Person("John");
+    }
+  }
+#+END_SRC
+
+
+* The builder pattern in Java [fn:6]
+
+Factories and constructors share a limitation: they do not scale well
+to large numbers of optional parameters. Consider the case of a class
+representing the ingredients of a Pizza. Most ingredients have nonzero
+values for only a few of these optional fields.
+
+What sort of constructors or static factories should you write for
+such a class? Traditionally, programmers have used the telescoping
+constructor pattern, in which you provide a constructor with only the
+required parameters, another with a single optional parameter, a
+third with two optional parameters, and so on, culminating in a
+constructor with all the optional parameters. Here’s how it looks
+in practice. For brevity’s sake, only three optional cheese fields
+are shown:
+
+#+begin_src java -n
+public class Pizza {
+    private final int dough;      // 100g, 200g, 300g  required
+    private final int mozarella;  // 100g, 200g, 300g  optional
+    private final int parmesan;   // 50g, 100g, 150g   optional
+    private final int gorgonzola; // 50g, 100g, 150g   optional
+
+    public Pizza(int dough) {
+        this(dough, 0, 0, 0);
+    }
+
+    public Pizza(int dough, int mozarella) {
+        this(dough, mozarella, 0, 0);
+    }
+
+    public Pizza(int dough, int mozarella, int parmesan) {
+        this(dough, mozarella, parmesan, 0);
+    }
+
+    public Pizza(int dough, int mozarella, int parmesan, int gorgonzola) {
+        this.dough = dough;
+        this.mozarella = mozarella;
+        this.parmesan = parmesan;
+        this.gorgonzola = gorgonzola;
+    }
+}
+#+end_src
+
+When you want to create an instance, you use the constructor with the
+shortest parameter list containing all the parameters you want to set:
+
+#+begin_src java                                                    
+Pizza margarita = new Pizza(200, 200);
+#+end_src
+
+
+In short, the telescoping constructor pattern works, but it is hard to
+write client code when there are many parameters, and harder still to read it.
+
+Luckily, the builder pattern helps us with the readability and
+tediousness of the code. Instead of making the desired object directly, the
+client calls a constructor  with all of the required parameters and gets a
+builder object. Then the client calls setter-like methods on the builder
+object to set each optional parameter of interest. Finally, the client calls
+a parameterless build method to generate the object, which is typically
+immutable. The builder is typically a static member class  of the class
+it builds. Here’s how it looks in practice:
+
+#+begin_src java
+public class Pizza {
+    private final int dough;      // 100g, 200g, 300g  required
+    private final int mozarella;  // 100g, 200g, 300g  optional
+    private final int parmesan;   // 50g, 100g, 150g   optional
+    private final int gorgonzola; // 50g, 100g, 150g   optional
+
+    public static class Builder {
+        // Required parameters
+        private final int dough;
+
+        // Optional parameters - initialized to default values
+        private int mozarella = 0;
+        private int parmesan = 0;
+        private int gorgonzola = 0;
+
+        public Builder(int dough) {
+            this.dough = dough;
+        }
+
+        public Builder setMozarella(int val) {
+            mozarella = val;
+            return this;
+        }
+
+        public Pizza build() {
+            return new Pizza(this);
+        }
+    }
+
+    private Pizza(Builder builder) {
+        dough = builder.dough;
+        mozarella = builder.mozarella;
+        parmesan = builder.parmesan;
+        gorgonzola = builder.gorgonzola;
+    }
+}
+#+end_src
+
+The Pizza class is immutable, and all parameter default values
+are in one place. The builder’s setter methods return the builder
+itself so that invocations can be chained.  Here’s how the
+client code looks:
+
+#+begin_src java
+Pizza pizza = new Pizza.Builder(200).setMozarella(200).setGorgonzola(50).build();
+#+end_src
+
+The Builder pattern simulates default arguments and named parameters as
+found in Python and eludes the telescoping pattern avoiding function
+overloading.
+
+* The builder pattern in Python
+
+In python, we just simply leverage the language support for named
+parameters and default values as explained in [[target]] to write
+pythonic code for the builder pattern.
+
+#+begin_src python
+class Pizza:
+    """
+    Pizza class to represent a pizza with its ingredients.
+    To set the ingredients the builder pattern is used.
+    """
+
+    def __init__(
+        self,
+        dough: int,
+        mozarella: int = 0,
+        parmesan: int = 0,
+        gorgonzola: int = 0,
+    ) -> None:
+        self.dough = dough
+        self.mozarella = mozarella
+        self.parmesan = parmesan
+        self.gorgonzola = gorgonzola
+#+end_src 
+
+This time we do not need to concatenate calls, nor call a build
+method to instantiate a pizza object.
+
+#+BEGIN_SRC python                                                                                                                     $
+pizza = Pizza(200, mozarella=200, gorgonzola=50)                                                                                                                                        
+#+END_SRC 
+
+* Summary
+
+Exploring the Builder Pattern in Java and Python, we uncovered
+language-specific nuances. While Java employs an inner builder
+class to simulate features like named parameters and default
+arguments found natively in Python, the latter provides a more
+concise and idiomatic approach. The post contrasts these
+implementations, offering insights into the divergent paths each
+language takes when applying the Builder Pattern.
+
+[fn:1] https://en.wikipedia.org/wiki/Builder_pattern
+[fn:2] https://en.wikipedia.org/wiki/Design_Patterns
+[fn:3] https://en.wikipedia.org/wiki/Default_argument
+[fn:4] https://en.wikipedia.org/wiki/Named_parameter
+[fn:5] https://en.wikipedia.org/wiki/Function_overloading
+[fn:6] Based on the excellent book "Effective Java: Programming
+Language Guide" (Third edition 2017) from Joshua Bloch. Item 2:
+Consider a builder when faced with many constructor paramters.
