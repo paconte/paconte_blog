@@ -7,7 +7,7 @@
       type="application/rss+xml"
       href="https://paconte.com/rss.xml"
       title="RSS feed for https://paconte.com/">
-<title>Comparing java map and python dict</title>
+<title>Comparing Java map and Python dict</title>
 <meta name="author" content="Francisco Javier Revilla Linares">
 <meta name="referrer" content="no-referrer">
 <meta name="viewport" content="initial-scale=1,width=device-width,minimum-scale=1">
@@ -24,27 +24,27 @@
 <br>
 <br></div>
 <div id="content">
-<div class="post-date">02 Feb 2023</div><h1 class="post-title"><a href="https://paconte.com/2023-02-02-comparing-java-map-and-python-dictionary.html">Comparing java map and python dict</a></h1>
+<div class="post-date">02 Feb 2023</div><h1 class="post-title"><a href="https://paconte.com/2023-02-02-comparing-java-map-and-python-dictionary.html">Comparing Java map and Python dict</a></h1>
 <nav id="table-of-contents" role="doc-toc">
 <h2>Table of Contents</h2>
 <div id="text-table-of-contents" role="doc-toc">
 <ul>
-<li><a href="#org8d18367">1. Hash collisions</a>
+<li><a href="#org70df295">1. Hash collisions</a>
 <ul>
-<li><a href="#orgeb24349">1.1. Separate chaining</a></li>
-<li><a href="#org7d9d505">1.2. Open addressing</a></li>
+<li><a href="#org1ce7519">1.1. Separate chaining</a></li>
+<li><a href="#org8ba4c78">1.2. Open addressing</a></li>
 </ul>
 </li>
-<li><a href="#orgb540661">2. Java map</a></li>
-<li><a href="#orgffb9a43">3. Python dictionary</a></li>
-<li><a href="#org7fec450">4. Performance</a>
+<li><a href="#orgf114c71">2. Java map</a></li>
+<li><a href="#org7e0e4db">3. Python dictionary</a></li>
+<li><a href="#org5642fd6">4. Performance</a>
 <ul>
-<li><a href="#org183f72b">4.1. Load factor</a></li>
+<li><a href="#orgb3240c8">4.1. Load factor</a></li>
 </ul>
 </li>
-<li><a href="#orgb569bdc">5. What about sets</a></li>
-<li><a href="#org23e3da2">6. Summary</a></li>
-<li><a href="#org6f526eb">7. A note on source code</a></li>
+<li><a href="#org80655b3">5. What about sets</a></li>
+<li><a href="#orgb374ad8">6. Summary</a></li>
+<li><a href="#org1a98dad">7. A note on source code</a></li>
 </ul>
 </div>
 </nav>
@@ -55,11 +55,11 @@ not for python dictionaries. That was the starting point of this entry.<br>
 </p>
 
 <p>
-Both data structures, java maps and python dictionaries, are implemented
-using hash tables. One of the most important feature of hash tables is 
-that the average search complexity is O(1). Hash tables turn out to be on
-average more efficient than search trees or any other table lookup
-structure. For this reason, they are widely used in computer science.<br>
+Java maps and Python dictionaries are both implemented using hash tables,
+which are highly efficient data structures for storing and retrieving
+key-value pairs. Hash tables have an average search complexity of O(1),
+making them more efficient than search trees or other table lookup
+structures. For this reason, they are widely used in computer science.<br>
 </p>
 
 <p>
@@ -69,15 +69,15 @@ as possible.
 </p>
 
 
-<figure id="org9284dd5">
+<figure id="org73f6ec6">
 <img src="./images/comparing-java-map-python-dict/hash_table_example_630x460px.svg.png" alt="hash_table_example_630x460px.svg.png" width="567px" height="414px">
 
 <figcaption><span class="figure-number">Figure 1: </span>A small phone book as a hash table [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].</figcaption>
 </figure>
 
 
-<div id="outline-container-org8d18367" class="outline-2">
-<h2 id="org8d18367"><span class="section-number-2">1.</span> Hash collisions</h2>
+<div id="outline-container-org70df295" class="outline-2">
+<h2 id="org70df295"><span class="section-number-2">1.</span> Hash collisions</h2>
 <div class="outline-text-2" id="text-1">
 <p>
 Java maps and python dictionaries implementations differs from each
@@ -88,11 +88,11 @@ and <b>separate chaining</b>.
 </p>
 </div>
 
-<div id="outline-container-orgeb24349" class="outline-3">
-<h3 id="orgeb24349"><span class="section-number-3">1.1.</span> Separate chaining</h3>
+<div id="outline-container-org1ce7519" class="outline-3">
+<h3 id="org1ce7519"><span class="section-number-3">1.1.</span> Separate chaining</h3>
 <div class="outline-text-3" id="text-1-1">
 
-<figure id="org6eb16a6">
+<figure id="org4cdca4a">
 <img src="./images/comparing-java-map-python-dict/hash_table_chaining_450x310px.svg.png" alt="hash_table_chaining_450x310px.svg.png" width="495px" height="341px">
 
 <figcaption><span class="figure-number">Figure 2: </span>Hash collision resolved by separate chaining [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].</figcaption>
@@ -108,8 +108,8 @@ of your whole collection.
 </div>
 </div>
 
-<div id="outline-container-org7d9d505" class="outline-3">
-<h3 id="org7d9d505"><span class="section-number-3">1.2.</span> Open addressing</h3>
+<div id="outline-container-org8ba4c78" class="outline-3">
+<h3 id="org8ba4c78"><span class="section-number-3">1.2.</span> Open addressing</h3>
 <div class="outline-text-3" id="text-1-2">
 <p>
 This technique is not as simple as separate chaining, but it should have a
@@ -119,7 +119,7 @@ probing techniques, for example in figure three the next cell position is used.
 </p>
 
 
-<figure id="orge986632">
+<figure id="org0f0d31f">
 <img src="./images/comparing-java-map-python-dict/hash_table_open_addressing_380x330px.svg.png" alt="hash_table_open_addressing_380x330px.svg.png" width="418px" height="363px">
 
 <figcaption><span class="figure-number">Figure 3: </span>Hash collusion resolved by open addressing [Jorge Stolfi, CC BY-SA 3.0, via Wikimedia Commons].</figcaption>
@@ -129,8 +129,8 @@ probing techniques, for example in figure three the next cell position is used.
 </div>
 
 
-<div id="outline-container-orgb540661" class="outline-2">
-<h2 id="orgb540661"><span class="section-number-2">2.</span> Java map</h2>
+<div id="outline-container-orgf114c71" class="outline-2">
+<h2 id="orgf114c71"><span class="section-number-2">2.</span> Java map</h2>
 <div class="outline-text-2" id="text-2">
 <p>
 If we inspect the Hashmap class from the <code>java.util</code> package, we will see
@@ -192,8 +192,8 @@ chaining was done only with linked lists.
 </div>
 
 
-<div id="outline-container-orgffb9a43" class="outline-2">
-<h2 id="orgffb9a43"><span class="section-number-2">3.</span> Python dictionary</h2>
+<div id="outline-container-org7e0e4db" class="outline-2">
+<h2 id="org7e0e4db"><span class="section-number-2">3.</span> Python dictionary</h2>
 <div class="outline-text-2" id="text-3">
 <p>
 Python in contrast to java uses open addressing to resolve hash collisions.
@@ -210,7 +210,7 @@ Let's see an example:<br>
 </p>
 
 
-<figure id="org8027142">
+<figure id="orgf20b96d">
 <img src="./images/comparing-java-map-python-dict/python_open_chaining_formula_720x228px.png" alt="python_open_chaining_formula_720x228px.png" width="648px" height="205px">
 
 </figure>
@@ -274,11 +274,11 @@ loop to find out the index, <code>line 17</code> recalculates the perturb value 
 </div>
 </div>
 
-<div id="outline-container-org7fec450" class="outline-2">
-<h2 id="org7fec450"><span class="section-number-2">4.</span> Performance</h2>
+<div id="outline-container-org5642fd6" class="outline-2">
+<h2 id="org5642fd6"><span class="section-number-2">4.</span> Performance</h2>
 <div class="outline-text-2" id="text-4">
 
-<figure id="orga9baba5">
+<figure id="org3791d3c">
 <img src="./images/comparing-java-map-python-dict/hash_table_average_insertion_time_362x235px.png" alt="hash_table_average_insertion_time_362x235px.png" width="362px" height="235px">
 
 <figcaption><span class="figure-number">Figure 4: </span>Derrick Coetzee, Public domain, via Wikimedia Commons.</figcaption>
@@ -318,8 +318,8 @@ shows how python uses dictionaries internally when creating classes.
 </div>
 
 
-<div id="outline-container-org183f72b" class="outline-3">
-<h3 id="org183f72b"><span class="section-number-3">4.1.</span> Load factor</h3>
+<div id="outline-container-orgb3240c8" class="outline-3">
+<h3 id="orgb3240c8"><span class="section-number-3">4.1.</span> Load factor</h3>
 <div class="outline-text-3" id="text-4-1">
 <p>
 As we have seen the load factor is crucial for the performance of hash table,
@@ -348,8 +348,8 @@ to a binary tree, as we can see in the code below.
 </div>
 
 
-<div id="outline-container-orgb569bdc" class="outline-2">
-<h2 id="orgb569bdc"><span class="section-number-2">5.</span> What about sets</h2>
+<div id="outline-container-org80655b3" class="outline-2">
+<h2 id="org80655b3"><span class="section-number-2">5.</span> What about sets</h2>
 <div class="outline-text-2" id="text-5">
 <p>
 Dictionaries and maps are closely related to sets. In fact, sets are just
@@ -398,8 +398,8 @@ probe.
 </div>
 </div>
 
-<div id="outline-container-org23e3da2" class="outline-2">
-<h2 id="org23e3da2"><span class="section-number-2">6.</span> Summary</h2>
+<div id="outline-container-orgb374ad8" class="outline-2">
+<h2 id="orgb374ad8"><span class="section-number-2">6.</span> Summary</h2>
 <div class="outline-text-2" id="text-6">
 <p>
 CPython and Java use different approach to resolve hash collisions,
@@ -413,8 +413,8 @@ for a proper performance of Python.
 </div>
 </div>
 
-<div id="outline-container-org6f526eb" class="outline-2">
-<h2 id="org6f526eb"><span class="section-number-2">7.</span> A note on source code</h2>
+<div id="outline-container-org1a98dad" class="outline-2">
+<h2 id="org1a98dad"><span class="section-number-2">7.</span> A note on source code</h2>
 <div class="outline-text-2" id="text-7">
 <p>
 The source code examples are extracted respectively from the Java SE 17

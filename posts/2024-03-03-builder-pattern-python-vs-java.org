@@ -1,7 +1,7 @@
 #+title: Differences of the builder pattern in Java and Python
 #+date: <2024-03-03 15:07>
 #+description: Differences in the builder pattern in Java and Python
-#+filetags:  java python desing-patterns
+#+filetags: java python desing-patterns
 
 In this post, we explore the differences in implementing the builder
 pattern in Java and Python.
