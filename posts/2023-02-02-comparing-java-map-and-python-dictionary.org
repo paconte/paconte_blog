@@ -1,4 +1,4 @@
-#+title: Comparing java map and python dict
+#+title: Comparing Java map and Python dict
 #+date: <2023-02-02 21:02>
 #+description: How hash table collisions are solved in java and python
 #+filetags: java python hash-table
