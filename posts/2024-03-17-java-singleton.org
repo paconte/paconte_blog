@@ -1,0 +1,112 @@
+#+title: Java singleton
+#+date: <2024-03-17 08:37>
+#+description: Java singleton best practices
+#+filetags: java singleton design-patterns
+
+Not long time ago, I discovered in Java it is possible to
+implement a Singleton with an Enum. And not only that, it is the
+recommended way to implement them!
+
+In this post, we explore the best practices when implementing the
+singleton pattern in Java.
+
+* Introduction
+
+The following text is extracted from the wikipedia [fn:1]:
+
+In software engineering, the singleton pattern is a software
+design pattern that restricts the instantiation of a class to
+a singular instance. One of the well-known "Gang of Four" design
+patterns [fn:2], which describes how to solve recurring problems
+in object-oriented software, the pattern is useful when exactly
+one object is needed to coordinate actions across a system.
+
+More specifically, the singleton pattern allows objects to:
+
+- Ensure they only have one instance
+- Provide easy access to that instance
+- Control their instantiation (for example, hiding the
+  constructors of a class)
+
+The term comes from the mathematical concept of a singleton [fn:3].
+
+* Java features to consider when creating a singleton
+
+** Concurrency
+When creating a singleton in Java we need to make sure it is
+thread safe[fn:4]. That is, when two or more threads instantiate a
+singleton only a single instance is created.
+
+For this purpose we will leverage the static keywork. The keyword
+static means that the particular member belongs to a type itself,
+rather than to an instance of that type. In the case of our
+example, the first thread will create that static member which
+will be share with the second and consecutive threads.
+
+** Reflection[fn:5]
+We will make use of private keyword to create a singleton, however
+with the help of Java reflection we can change the accessibility
+of private members.
+
+** Serialization
+Serialization is the process of translating an object into a format
+that can be stored or transmitted and reconstructed later. See
+figure 1.
+
+#+CAPTION: Serialization [WnbKrumov, CC BY-SA 3.0, via Wikimedia Commons].
+#+ATTR_HTML: :width 600px :height 268px 
+[[./images/java-singleton/Serialization.jpg]]
+
+In Java, serializability of a class is enabled by the class
+implementing the java.io.Serializable interface.
+
+Now, imagine your application serializes your singleton instance, so far
+so good, a stream of bytes has been created. However, when your application
+deserialize the same stream of bytes, it might end creating a new instance,
+leading, in the case of our example, to have two different instances!
+
+Therefore we need to be carefull whith Serialization when implementing our
+Singleton.
+
+* Singleton with public final field
+
+#+BEGIN_SRC java
+  // Singleton with public final field
+  public class Spyderman {
+      public static final Spyderman INSTANCE = new Spyderman();
+      private Spyderman() { ... }
+      public void withGreatPowerComesGreatResponsibility() { ... }
+  }
+#+END_SRC
+
+* Singleton with static factory
+
+#+BEGIN_SRC java
+    // Singleton with static factory
+    public class Spyderman {
+        private static final Spyderman INSTANCE = new Spyderman();
+        private Spyderman() { ... }
+        public static Spyderman getInstance() { return INSTANCE; }
+        public void withGreatPowerComesGreatResponsibility() { ... }
+    }
+#+END_SRC
+
+* Enum singleton
+
+#+BEGIN_SRC java
+  // Enum singleton - the preferred approach
+  public enum Spyderman {
+      INSTANCE;
+      public void withGreatPowerComesGreatResponsibility() { ... }
+  }
+#+END_SRC
+
+- Advantages and disagvantages of each approach
+https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/io/Serializable.html
+
+[fn:1] https://en.wikipedia.org/wiki/Singleton_pattern
+[fn:2] https://en.wikipedia.org/wiki/Design_Patterns
+[fn:3] https://en.wikipedia.org/wiki/Singleton_(mathematics)
+[fn:4] https://en.wikipedia.org/wiki/Thread_safety
+[fn:5] https://www.oracle.com/technical-resources/articles/java/javareflection.html
+
