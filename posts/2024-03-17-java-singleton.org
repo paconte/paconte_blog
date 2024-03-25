@@ -43,10 +43,14 @@ rather than to an instance of that type. In the case of our
 example, the first thread will create that static member which
 will be share with the second and consecutive threads.
 
-** Reflection[fn:5]
-We will make use of private keyword to create a singleton, however
-with the help of Java reflection we can change the accessibility
-of private members.
+** Reflection
+In the later examples, we will make use of a private contructor to
+implement the Singleton. With the help of Reflection[fn:5], an
+attacker could modify the runtime behaviour of the application
+modifying the accessibility of the private constructor to public.
+In other words, with the help of Reflection it would be possible
+to create a second instance of the class.
+
 
 ** Serialization
 Serialization is the process of translating an object into a format
